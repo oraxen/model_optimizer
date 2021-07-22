@@ -9,6 +9,10 @@ args = parser.parse_args()
 
 with open(args.model) as model_file:
     content = json.load(model_file)
+    elements = content["elements"]
+    for element in elements:
+        if "__comment" in element:
+            del element["__comment"]
     optimized_output = json.dumps(content).replace(" ", "")
     with open(args.model.replace(".json", "") + "_optimized.json", 'w') as output_file:
         output_file.write(optimized_output)
