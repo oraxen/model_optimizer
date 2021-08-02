@@ -11,7 +11,7 @@ args = parser.parse_args()
 pack_files = []
 for path, subdirs, files in os.walk(args.folder):
     for name in files:
-        pack_files.append(name.replace(args.folder, "", 1))
+        pack_files.append(os.path.join(path, name).replace(args.folder, "", 1))
 
 output_folder = "./output"
 if os.path.isdir(output_folder):
@@ -19,15 +19,24 @@ if os.path.isdir(output_folder):
 os.mkdir(output_folder)
 
 for pack_file in pack_files:
-    input_file = os.path.join(args.folder, pack_file)
-    new_name = os.path.join(output_folder, pack_file)
+    input_file = args.folder + pack_file
+    new_name = output_folder + pack_file
+
+    if not os.path.exists(os.path.dirname(new_name)):
+        try:
+            os.makedirs(os.path.dirname(new_name))
+        except OSError as exc: # Guard against race condition
+            if exc.errno != errno.EEXIST:
+                raise
+
     if pack_file.endswith(".json"):
         with open(input_file) as model_file:
             content = json.load(model_file)
-            elements = content["elements"]
-            for element in elements:
-                if "__comment" in element:
-                    del element["__comment"]
+            if "elements" in content:
+                elements = content["elements"]
+                for element in elements:
+                    if "__comment" in element:
+                        del element["__comment"]
             optimized_output = json.dumps(content).replace(" ", "")
             with open(new_name, 'w') as output_file:
                 output_file.write(optimized_output)
