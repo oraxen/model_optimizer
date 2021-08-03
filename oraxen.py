@@ -41,4 +41,4 @@ for pack_file in pack_files:
             with open(new_name, 'w') as output_file:
                 output_file.write(optimized_output)
     else:
-        os.rename(input_file, new_name)
+        shutil.copyfile(input_file, new_name)
